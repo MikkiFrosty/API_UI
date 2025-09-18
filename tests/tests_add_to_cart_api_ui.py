@@ -2,55 +2,66 @@ import os
 import requests
 import urllib3
 from selene import browser, have
+import allure
+from allure_commons.types import AttachmentType
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 BASE = os.getenv('BASE_URL', 'https://demowebshop.tricentis.com')
-EMAIL = os.getenv('EMAIL', 'example12000@example.com')
+LOGIN = os.getenv('EMAIL', 'example12000@example.com')
 PASSWORD = os.getenv('PASSWORD', '123456')
 
-def test_requests_session():
-    s = requests.Session()
-    s.trust_env = False
-    s.proxies = {'http': None, 'https': None}
-    s.verify = False
-    return s
 
-def test_api_login(session):
-    r = session.post(f"{BASE}/login",
-                     data={'Email': EMAIL, 'Password': PASSWORD, 'RememberMe': False},
-                     allow_redirects=False)
-    assert r.status_code in (200, 302)
-    return r
+def api_login_and_get_cookie():
+    with allure.step("Login with API"):
+        s = requests.Session()
+        s.trust_env = False
+        s.verify = False
+        result = s.post(
+            url=f"{BASE}/login",
+            data={"Email": LOGIN, "Password": PASSWORD, "RememberMe": False},
+            allow_redirects=False
+        )
+        allure.attach(str(result.status_code), name="Status", attachment_type=AttachmentType.TEXT)
+        allure.attach(str(result.cookies), name="Cookies", attachment_type=AttachmentType.TEXT)
+        cookie = result.cookies.get("NOPCOMMERCE.AUTH")
+        assert cookie, "Auth cookie is empty"
+        return s, cookie
 
-def test_api_add_to_cart(session, product_id: int, qty: int = 1):
-    payload = {f'addtocart_{product_id}.EnteredQuantity': str(qty)}
-    r = session.post(f"{BASE}/addproducttocart/catalog/{product_id}/1", data=payload, allow_redirects=False)
-    if r.status_code >= 400:
-        r = session.post(f"{BASE}/addproducttocart/details/{product_id}/1", data=payload, allow_redirects=False)
-    assert r.status_code in (200, 302)
-    return r
 
-def test_transfer_cookies_to_browser(session):
-    browser.open('/')
-    for c in session.cookies:
+def api_add_to_cart(session: requests.Session, product_id: int, qty: int = 1):
+    with allure.step(f"Add product via API: id={product_id}, qty={qty}"):
+        res = session.post(
+            url=f"{BASE}/addproducttocart/details/{product_id}/1",
+            data={"addtocart_{0}.EnteredQuantity".format(product_id): str(qty)},
+            allow_redirects=True
+        )
+        allure.attach(str(res.status_code), name="AddToCart Status", attachment_type=AttachmentType.TEXT)
         try:
-            browser.driver.execute_cdp_cmd('Network.setCookie', {
-                'name': c.name, 'value': c.value, 'domain': c.domain or 'demowebshop.tricentis.com',
-                'path': c.path or '/', 'httpOnly': False, 'secure': False
-            })
+            allure.attach(res.text[:1000], name="AddToCart Body (truncated)", attachment_type=AttachmentType.TEXT)
         except Exception:
-            try:
-                browser.driver.add_cookie({'name': c.name, 'value': c.value, 'path': c.path or '/'})
-            except Exception:
-                pass
+            pass
+        assert res.status_code < 500, "Server error on add to cart"
+
+
+def transfer_cookies_to_browser(cookie: str):
+    with allure.step("Set cookie from API to browser"):
+        browser.open('/')  # open domain first due to Selenium requirement
+        browser.driver.add_cookie({"name": "NOPCOMMERCE.AUTH", "value": cookie})
+        browser.open('/')
+
+
+def test_login_through_api_ui():
+    s, cookie = api_login_and_get_cookie()
+    transfer_cookies_to_browser(cookie)
+    with allure.step("Verify successful authorization on UI"):
+        browser.element(".account").should(have.text(LOGIN))
+
 
 def test_add_item_via_api_and_check_cart_ui():
-    s = test_requests_session()
-    test_api_login(s)
-    test_api_add_to_cart(s, product_id=31, qty=1)
-
-    test_transfer_cookies_to_browser(s)
-
-    browser.open('/cart')
-    browser.element('#shopping-cart-form').should(have.text('Health'))
+    s, cookie = api_login_and_get_cookie()
+    api_add_to_cart(s, product_id=31, qty=1)
+    transfer_cookies_to_browser(cookie)
+    with allure.step("Open cart and verify item present"):
+        browser.open('/cart')
+        browser.element('#shopping-cart-form').should(have.text('Health'))

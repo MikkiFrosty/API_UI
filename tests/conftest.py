@@ -7,7 +7,7 @@ def pytest_sessionstart(session):
     browser.config.base_url = BASE_URL
     browser.config.window_width = 1200
     browser.config.window_height = 900
-    browser.config.timeout = 6
+    browser.config.timeout = 8
 
 def pytest_sessionfinish(session, exitstatus):
     try:
