@@ -4,12 +4,13 @@ import urllib3
 from selene import browser, have
 import allure
 from allure_commons.types import AttachmentType
+import re, allure
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 BASE = os.getenv('BASE_URL', 'https://demowebshop.tricentis.com')
-LOGIN = os.getenv('EMAIL', 'example12000@example.com')
-PASSWORD = os.getenv('PASSWORD', '123456')
+LOGIN = os.getenv('EMAIL', 'test@tast.ru')
+PASSWORD = os.getenv('PASSWORD', 'Qwerty123')
 
 
 def api_login_and_get_cookie():
@@ -50,11 +51,26 @@ def transfer_cookies_to_browser(cookie: str):
         browser.driver.add_cookie({"name": "NOPCOMMERCE.AUTH", "value": cookie})
         browser.open('/')
 
+def api_clear_qty(session, product_name: str):
+    with allure.step(f"clear product for '{product_name}'"):
+        r = session.get(f"{BASE}/cart")
+        cid = re.search(rf'{product_name}.*?name="itemquantity(\d+)"', r.text, re.S).group(1)
+        session.post(f"{BASE}/cart", data={f"itemquantity{cid}": "0", "updatecart": "Update"}, allow_redirects=True)
 
-def test_add_item_via_api_and_check_cart_ui():
+def test_add_item():
     s, cookie = api_login_and_get_cookie()
     api_add_to_cart(s, product_id=31, qty=1)
     transfer_cookies_to_browser(cookie)
     with allure.step("Open cart and verify item present"):
         browser.open('/cart')
-        browser.element('#shopping-cart-form').should(have.text('Health'))
+        browser.element('a.product-name').should(have.exact_text('14.1-inch Laptop'))
+
+def test_remove_item():
+    s, cookie = api_login_and_get_cookie()
+    api_add_to_cart(s, 31, 1)
+
+    api_clear_qty(s, "14.1-inch Laptop")
+    transfer_cookies_to_browser(cookie)
+    with allure.step("UI: verify item removed from cart"):
+        browser.open('/cart')
+        browser.element('.order-summary-content').should(have.text('Your Shopping Cart is empty!'))
