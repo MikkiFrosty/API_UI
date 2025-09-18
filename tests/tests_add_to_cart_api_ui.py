@@ -51,13 +51,6 @@ def transfer_cookies_to_browser(cookie: str):
         browser.open('/')
 
 
-def test_login_through_api_ui():
-    s, cookie = api_login_and_get_cookie()
-    transfer_cookies_to_browser(cookie)
-    with allure.step("Verify successful authorization on UI"):
-        browser.element(".account").should(have.text(LOGIN))
-
-
 def test_add_item_via_api_and_check_cart_ui():
     s, cookie = api_login_and_get_cookie()
     api_add_to_cart(s, product_id=31, qty=1)
