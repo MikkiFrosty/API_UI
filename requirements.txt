@@ -2,5 +2,5 @@ allure-pytest==2.13.2
 pytest==8.0.0
 requests==2.31.0
 pydantic==2.7.1
-typing-extensions==4.3.0
+typing-extensions==4.6.1
 selene==2.0.0b17
