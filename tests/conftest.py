@@ -1,16 +1,14 @@
+
 import os
+import pytest
 from selene import browser
+from api_ui_cart_project.api.client import HttpClient
 
-BASE_URL = os.getenv('BASE_URL', 'https://demowebshop.tricentis.com')
+@pytest.fixture(scope="session", autouse=True)
+def base_url():
+    browser.config.base_url = os.getenv("BASE_URL", "https://demowebshop.tricentis.com")
+    return browser.config.base_url
 
-def pytest_sessionstart(session):
-    browser.config.base_url = BASE_URL
-    browser.config.window_width = 1200
-    browser.config.window_height = 900
-    browser.config.timeout = 8
-
-def pytest_sessionfinish(session, exitstatus):
-    try:
-        browser.quit()
-    except Exception:
-        pass
+@pytest.fixture(scope="session")
+def client(base_url):
+    return HttpClient(base_url=base_url)
