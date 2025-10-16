@@ -11,7 +11,7 @@ from ..models.auth import LoginRequest
 def api_login_and_get_cookie(client: HttpClient, email: str, password: str) -> Tuple[HttpClient, str]:
     client.get("/login")
     login = LoginRequest(Email=email, Password=password, RememberMe="false")
-    resp = client.post("/login", data=login.model_dump(), allow_redirects=False)
+    resp = client.post("/login", data=login.dict(), allow_redirects=False)
     assert resp.status_code in (302, 200)
     cookie_header = "; ".join([f"{c.name}={c.value}" for c in client.s.cookies])
     return client, cookie_header
