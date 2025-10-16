@@ -2,4 +2,4 @@ allure-pytest>=2.13.2
 pydantic>=2.7.0
 pytest>=8.0.0
 requests>=2.31.0
-selene>=2.0.0
+selene==2.0.0b17
