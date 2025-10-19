@@ -107,3 +107,41 @@ def pytest_runtest_makereport(item, call):
     outcome = yield
     rep = outcome.get_result()
     setattr(item, "rep_" + rep.when, rep)
+
+# === ALWAYS ATTACH ARTIFACTS (added) ===
+import allure as _allure_internal_ref
+from selene import browser as _browser_internal_ref
+import os, pytest
+
+def _video_base() -> str:
+    return os.getenv("SELENOID_VIDEO_BASE", "https://selenoid.autotests.cloud/video").rstrip("/")
+
+@pytest.fixture(autouse=True)
+def _always_attach_artifacts():
+    yield
+    try:
+        try:
+            png = _browser_internal_ref.driver.get_screenshot_as_png()
+            _allure_internal_ref.attach(png, name="screenshot", attachment_type=_allure_internal_ref.attachment_type.PNG)
+        except Exception:
+            pass
+        try:
+            src = _browser_internal_ref.driver.page_source
+            _allure_internal_ref.attach(src, name="page_source", attachment_type=_allure_internal_ref.attachment_type.HTML)
+        except Exception:
+            pass
+        try:
+            logs = _browser_internal_ref.driver.get_log("browser")
+            text = "\n".join(f"[{x.get('level')}] {x.get('message')}" for x in logs)
+            _allure_internal_ref.attach(text or "(no console logs)", name="browser_logs", attachment_type=_allure_internal_ref.attachment_type.TEXT)
+        except Exception:
+            pass
+        try:
+            session_id = _browser_internal_ref.driver.session_id
+            video_url = f"{_video_base()}/{session_id}.mp4"
+            html = f'<html><body style="margin:0;"><video width="100%" controls><source src="{video_url}" type="video/mp4"></video></body></html>'
+            _allure_internal_ref.attach(html, name="video", attachment_type=_allure_internal_ref.attachment_type.HTML)
+        except Exception:
+            pass
+    except Exception:
+        pass
