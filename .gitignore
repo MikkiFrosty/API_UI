@@ -7,3 +7,6 @@ allure-results/
 allure-report/
 *.log
 .DS_Store
+# === allow notifications folder to be tracked ===
+!notifications/
+!notifications/**
