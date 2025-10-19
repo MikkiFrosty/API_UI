@@ -1,9 +1,6 @@
-pytest==8.0.0
-allure-pytest==2.13.2
-python-dotenv==1.1.1
+selenium==4.23.1
+selene==2.0.0rc9
+pytest==7.4.4
+allure-pytest==2.13.5
+python-dotenv==1.0.1
 requests==2.31.0
-pydantic==1.10.14
-typing-extensions==4.3.0
-selene==2.0.0b17
-webdriver-manager==3.8.6
-selenium==4.16.0
