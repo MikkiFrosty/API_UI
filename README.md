@@ -1,6 +1,9 @@
 # API + UI Cart — учебный проект по автоматизации
+<p align="center">
+  <img src="images/api.png" alt="Wikipedia Mobile banner" width="900">
+</p>
 
-> Репозиторий демонстрирует **два набора автотестов**:  
+> > Репозиторий демонстрирует **два набора автотестов**:  
 > 1) **Тренажёрные API‑тесты** на сервисе Reqres.in,  
 > 2) **Комбинированные UI+API‑тесты** для корзины Demo Web Shop.  
 >
@@ -55,9 +58,16 @@ pytest tests -q
 ```bash
 allure serve allure-results
 ```
-## Allure Report
-[Пример Allure Report](https://jenkins.autotests.cloud/job/API_UI-main)
+## Jenkins
+[Проект в Jenkins](https://jenkins.autotests.cloud/job/API_UI-main)
 
 <p align="center">
   <img src="images/allure_overview.png" alt="Allure Report: успешные тесты" width="800">
+</p>
+
+## Alure Report
+[Пример Alure Report](https://jenkins.autotests.cloud/job/API_UI-main/15/allure/)
+
+<p align="center">
+  <img src="images/allure_report.png" alt="Allure Report: успешные тесты" width="800">
 </p>
