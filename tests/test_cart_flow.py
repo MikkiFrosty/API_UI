@@ -47,8 +47,3 @@ def test_add_to_cart_then_ui_shows_item():
         browser.open("/cart")
         browser.element("a.product-name").with_(timeout=10).should(have.exact_text("14.1-inch Laptop"))
 
-@allure.feature("DELETE coverage")
-def test_delete_method_coverage():
-    reqres = HttpClient("https://reqres.in")
-    r = reqres.delete("/api/users/2", verify=False)
-    assert r.status_code in (204, 200, 401)

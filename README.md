@@ -1,56 +1,69 @@
+# API + UI Cart — учебный проект по автоматизации
 
-# API UI — Тестирование корзины
+> Репозиторий демонстрирует **два набора автотестов**:  
+> 1) **тренажёрные API‑тесты** на сервисе Reqres.in,  
+> 2) **комбинированные UI+API‑тесты** для корзины Demo Web Shop.  
+>
+> Проект учебный: отработка REST‑проверок (CRUD, статус‑коды, JSON‑схемы) и базовой связки через API в UI.
 
-Мини-проект для диплома: API-тестирование с подготовкой данных для UI на примере интернет-магазина **Demo Web Shop** (корзина).
+## Технологический стек
 
-## Стек
-- Python, Pytest
-- Requests
-- Pydantic — модели для запросов/ответов
-- Allure — красивые отчёты (вложения request/response)
-- Selene — для `browser.config.base_url` и проверки UI-состояния после действий по API
+<p  align="center">
+<img src="images/logos/python-original.svg" width="50" title="Python"> <img src="images/logos/pytest.png" width="50" title="Pytest"> <img src="images/logos/intellij_pycharm.png" width="50" title="PyCharm"> <img src="images/logos/selene.png" width="50" title="Selene"> <img src="images/logos/selenium.png" width="50" title="Selenium"> <img src="images/logos/selenoid.png" width="50" title="Selenoid"> <img src="images/logos/jenkins.png" width="50" title="Jenkins"> <img src="images/logos/allure_report.png" width="50" title="Allure Report"> <img src="images/logos/github.png" width="50" title="GitHub">
+</p>
 
 ## Покрытый функционал
-- Авторизация по API и получение cookie
-- Добавление товара в корзину по API (`POST /addproducttocart/details/{id}/1`) с валидацией JSON
-- Очистка/удаление позиции из корзины по API (`POST /cart`)
-- Проверка UI после подготовки данных по API (корзина содержит/пуста)
-- Тест для метода `DELETE` (на публичном API `reqres.in`)
 
-## Структура проекта
-```
-api_ui_cart_project/
-  api/
-    client.py               
-    demowebshop_flows.py    
-  models/
-    cart.py                 
-  utils/
-    logger.py
-tests/
-  resources/                
-  conftest.py               
-  test_cart_flow.py         
-pictures/                 
-requirements.txt
-.gitignore
-README.md
-UNMET_REQUIREMENTS.md
-```
+### 1) Тренажёрные **API-тесты** (папка `tests_api/`) — сервис **Reqres.in**
+
+- Проверка получения списка пользователей (GET)
+- Проверка получения конкретного пользователя (GET)
+- Проверка ошибки при запросе несуществующего пользователя (GET)
+- Проверка создания пользователя по схеме (POST)
+- Проверка ошибки при регистрации без пароля (POST)
+- Проверка обновления данных пользователя (PUT)
+- Проверка удаления пользователя (DELETE)
+
+---
+
+### 2) Комбинированные **UI+API-тесты корзины** (папка `tests/`) — **Demo Web Shop**
+
+- Авторизация через API и получение cookie
+- Добавление товара в корзину через API и проверка успешного ответа
+- Очистка корзины через API и проверка, что в UI корзина пуста
+- Проверка, что добавленный через API товар отображается в UI
 
 ## Запуск
+
+Установить зависимости и запустить все тесты:
 ```bash
-python -m venv .venv
-source .venv/bin/activate    # Windows: .venv\Scripts\activate
+python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-pytest -v --alluredir=allure-results
-# allure serve allure-results   # при наличии allure CLI
+pytest -q
 ```
 
-## Jenkins / Allure (заглушки)
-- Job: https://jenkins.example.com/job/api_ui_cart/
-- Allure Report: https://jenkins.example.com/job/api_ui_cart/AllureReport/
+Только **API‑тесты** (Reqres):
+```bash
+pytest tests_api -q
+```
 
-Скриншот уведомления в Telegram (заглушка) — в каталоге `pictures/`.
+Только **UI+API** (Demo Web Shop):
+```bash
+pytest tests -q
+```
+Локальная генерация отчёта Allure:
+```bash
+allure serve allure-results
+```
+## Allure Report
+[Пример Allure Report]()
 
+<p align="center">
+  <img src="images/allure_overview.png" alt="Allure Report: успешные тесты" width="800">
+</p>
 
+## Пример видео прохождения тестов
+
+<p align="center">
+  <img src="images/api_tests.gif" alt="API autotests run" width="500">
+</p>
