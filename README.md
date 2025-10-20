@@ -1,8 +1,8 @@
 # API + UI Cart — учебный проект по автоматизации
 
 > Репозиторий демонстрирует **два набора автотестов**:  
-> 1) **тренажёрные API‑тесты** на сервисе Reqres.in,  
-> 2) **комбинированные UI+API‑тесты** для корзины Demo Web Shop.  
+> 1) **Тренажёрные API‑тесты** на сервисе Reqres.in,  
+> 2) **Комбинированные UI+API‑тесты** для корзины Demo Web Shop.  
 >
 > Проект учебный: отработка REST‑проверок (CRUD, статус‑коды, JSON‑схемы) и базовой связки через API в UI.
 
@@ -56,14 +56,8 @@ pytest tests -q
 allure serve allure-results
 ```
 ## Allure Report
-[Пример Allure Report]()
+[Пример Allure Report](https://jenkins.autotests.cloud/job/API_UI-main)
 
 <p align="center">
   <img src="images/allure_overview.png" alt="Allure Report: успешные тесты" width="800">
-</p>
-
-## Пример видео прохождения тестов
-
-<p align="center">
-  <img src="images/api_tests.gif" alt="API autotests run" width="500">
 </p>

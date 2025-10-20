@@ -1,10 +1,13 @@
 import time, json, requests, allure
+from api_ui_cart_project.utils.logger import get_logger
+
 
 class ApiClient:
     def __init__(self, base_url: str, default_headers: dict | None = None):
         self.base_url = base_url.rstrip('/')
         self.session = requests.Session()
         self.default_headers = default_headers or {}
+        self.log = get_logger("api_api")
 
     def _attach(self, name: str, content: str, attachment_type=allure.attachment_type.TEXT):
         try:
@@ -19,16 +22,26 @@ class ApiClient:
             req_headers.update(headers)
 
         try:
-            req_dump = {
+            req_meta = {
                 "method": method.upper(),
                 "url": url,
-                "headers": req_headers,
                 "params": params or {},
-                "json": json_body,
+                "headers": req_headers,
             }
-            self._attach("request", json.dumps(req_dump, ensure_ascii=False, indent=2), allure.attachment_type.JSON)
+            allure.attach(
+                json.dumps(req_meta, ensure_ascii=False, indent=2),
+                name="request-meta",
+                attachment_type=allure.attachment_type.JSON
+            )
+            if json_body is not None:
+                allure.attach(
+                    json.dumps(json_body, ensure_ascii=False, indent=2),
+                    name="request-body",
+                    attachment_type=allure.attachment_type.JSON
+                )
         except Exception:
             pass
+        # --------------------------------------------------
 
         start = time.time()
         resp = self.session.request(method=method.upper(), url=url, params=params, json=json_body, headers=req_headers, **kwargs)
@@ -42,16 +55,28 @@ class ApiClient:
                 body_text = resp.text
                 att_type = allure.attachment_type.TEXT
 
-            meta = {"status_code": resp.status_code, "elapsed_ms": elapsed_ms, "headers": dict(resp.headers)}
+            meta = {
+                "status_code": resp.status_code,
+                "elapsed_ms": elapsed_ms,
+                "headers": dict(resp.headers)
+            }
             self._attach("response-meta", json.dumps(meta, ensure_ascii=False, indent=2), allure.attachment_type.JSON)
             self._attach("response-body", body_text, att_type)
         except Exception:
             pass
+        # --------------------------------------------------
 
-        print(f"[API] {method.upper()} {url} -> {resp.status_code} ({elapsed_ms} ms)")
+        self.log.info(f"{method.upper()} {url} -> {resp.status_code} ({elapsed_ms} ms)")
         return resp
 
-    def get(self, endpoint: str, **kw):    return self.request("GET", endpoint, **kw)
-    def post(self, endpoint: str, **kw):   return self.request("POST", endpoint, **kw)
-    def put(self, endpoint: str, **kw):    return self.request("PUT", endpoint, **kw)
-    def delete(self, endpoint: str, **kw): return self.request("DELETE", endpoint, **kw)
+    def get(self, endpoint: str, **kw):
+        return self.request("GET", endpoint, **kw)
+
+    def post(self, endpoint: str, **kw):
+        return self.request("POST", endpoint, **kw)
+
+    def put(self, endpoint: str, **kw):
+        return self.request("PUT", endpoint, **kw)
+
+    def delete(self, endpoint: str, **kw):
+        return self.request("DELETE", endpoint, **kw)
